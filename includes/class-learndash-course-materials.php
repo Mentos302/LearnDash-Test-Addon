@@ -10,27 +10,33 @@ class LearndashCourseMaterials {
 	}
 
 	public static function renderCourseMaterials( $attributes ) {
-		$attributes = shortcode_atts( [ 'course_id' => '' ], $attributes );
-		$courseId = intval( $attributes['course_id'] );
+    $attributes = shortcode_atts( [ 'course_id' => '' ], $attributes );
+    $courseId = intval( $attributes['course_id'] );
 
-		if ( ! $courseId ) {
-			return "Course ID is missing.";
-		}
+    if ( ! $courseId ) {
+        return "Course ID is missing.";
+    }
 
-		$materials = get_post_meta( $courseId, '_ld_course_materials', true );
-		$visibility = get_post_meta( $courseId, '_ld_course_materials_show_to', true ) ?: 'enrolled';
-		$userId = get_current_user_id();
+    $materials = get_post_meta( $courseId, '_ld_course_materials', true );
+    $visibility = get_post_meta( $courseId, '_ld_course_materials_show_to', true ) ?: 'enrolled';
+    $userId = get_current_user_id();
 
-		if ( $visibility === 'enrolled' && ! sfwd_lms_has_access( $courseId, $userId ) ) {
-			return "You must be enrolled in this course to view the materials.";
-		}
+    if ( $visibility === 'enrolled' && ! sfwd_lms_has_access( $courseId, $userId ) ) {
+        return "You must be enrolled in this course to view the materials.";
+    }
 
-		if ( ! empty( $materials ) ) {
-			return '<div class="ld-course-materials">' . wp_kses_post( $materials ) . '</div>';
-		}
+    // Ensure $materials is a string
+    if ( is_array( $materials ) ) {
+        $materials = implode( ', ', $materials );
+    }
 
-		return "No materials available for this course.";
-	}
+    if ( ! empty( $materials ) ) {
+        return '<div class="ld-course-materials">' . wp_kses_post( $materials ) . '</div>';
+    }
+
+    return "No materials available for this course.";
+}
+
 
 	public static function addCourseMaterialsMetaBox() {
 		add_meta_box(
